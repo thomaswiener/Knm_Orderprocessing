@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config>
+    <menu>
+        <orderprocessing module="orderprocessing">
+            <title>Orderprocessing</title>
+            <sort_order>71</sort_order>               
+            <children>
+                <messages module="orderprocessing">
+                    <title>List messages</title>
+                    <sort_order>10</sort_order>
+                    <action>orderprocessing/adminhtml_message</action>
+                </messages>
+                <items module="orderprocessing">
+                    <title>List message items</title>
+                    <sort_order>20</sort_order>
+                    <action>orderprocessing/adminhtml_orderprocessing</action>
+                </items>
+            </children>
+        </orderprocessing>
+    </menu>
+</config>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <sections>
+        <knm_orderprocessing translate="label" module="orderprocessing">
+            <label>KNM Orderprocessing</label>
+            <tab>general</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>2000</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <general translate="label">
+                  <label>General</label>
+                  <frontend_type>text</frontend_type>
+                  <sort_order>100</sort_order>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>1</show_in_store>
+                  <fields>
+                      <active translate="label">
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <comment>Enable orderprocessing module</comment>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                      </active>
+                      <fileregex translate="label">
+                            <label>Filename regular expression</label>
+                            <frontend_type>textarea</frontend_type>
+                            <comment>Filename are being validated against given regular expression. If empty, all file will pass. Example: "#^Euro_(Best|Stor|Vers|Aend)_1719901-D_([0-9]{8}|[0-9]{18}).xml$#"</comment>
+                            <sort_order>60</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                      </fileregex>
+                    </fields>
+                </general>
+                <orderprocessing_file_download_server translate="label">
+                  <label>File Download Server (SFTP)</label>
+                  <frontend_type>text</frontend_type>
+                  <sort_order>100</sort_order>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>1</show_in_store>
+                  <fields>
+                      <active translate="label">
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                      </active>
+                      <host translate="label">
+                          <label>Host</label>
+                          <comment>Hostname of SFTP Server</comment>
+                          <tooltip></tooltip>
+                          <sort_order>20</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </host>
+                      <username translate="label">
+                          <label>Username</label>
+                          <comment>Username of SFTP account</comment>
+                          <tooltip></tooltip>
+                          <sort_order>30</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </username>
+                      <password translate="label">
+                          <label>Password</label>
+                          <comment>Password of SFTP account</comment>
+                          <tooltip></tooltip>
+                          <sort_order>40</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>password</frontend_type>
+                      </password>
+                      <remote_path translate="label">
+                          <label>Remote path</label>
+                          <comment>Path to save files to</comment>
+                          <tooltip></tooltip>
+                          <sort_order>50</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </remote_path>
+                      <livemode translate="label">
+                            <label>Live Mode enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <comment>If live mode enabled, files will be moved on sftp server to archive folder.</comment>
+                            <sort_order>60</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                      </livemode>
+                    </fields>
+                </orderprocessing_file_download_server>
+                <orderprocessing_local_file_storage translate="label">
+                  <label>Local File Storage</label>
+                  <frontend_type>text</frontend_type>
+                  <sort_order>200</sort_order>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>1</show_in_store>
+                  <fields>
+                      <files_new translate="label">
+                          <label>New files path</label>
+                          <comment>Put downloaded files in this path</comment>
+                          <tooltip></tooltip>
+                          <sort_order>10</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </files_new>
+                      <files_processed translate="label">
+                          <label>Processed files path</label>
+                          <comment>Move processed files in this path</comment>
+                          <tooltip></tooltip>
+                          <sort_order>20</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </files_processed>
+                    </fields>
+                </orderprocessing_local_file_storage>
+                <orderprocessing_logging translate="label">
+                  <label>Logging</label>
+                  <frontend_type>text</frontend_type>
+                  <sort_order>300</sort_order>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>1</show_in_store>
+                  <fields>
+                      <active translate="label">
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                      </active>
+                      <notice_log_prefix translate="label">
+                          <label>Notice Log Prefix</label>
+                          <comment></comment>
+                          <tooltip></tooltip>
+                          <sort_order>20</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </notice_log_prefix>
+                      <warning_log_prefix translate="label">
+                          <label>Warning Log Prefix</label>
+                          <comment></comment>
+                          <tooltip></tooltip>
+                          <sort_order>30</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </warning_log_prefix>
+                      <error_log_prefix translate="label">
+                          <label>Error Log Prefix</label>
+                          <comment></comment>
+                          <tooltip></tooltip>
+                          <sort_order>40</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </error_log_prefix>
+                      <error_email_address translate="label">
+                          <label>E-Mail für Fehlermeldungen</label>
+                          <comment>An die hier angegebene E-Mail-Adresse werden alle Fehlermeldungen inkl. Fehlerbericht gesendet.
+                                       Mehrere Adressen können mit Semikolon (;) getrennt angegeben werden.</comment>
+                          <tooltip></tooltip>
+                          <sort_order>50</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </error_email_address>
+                    </fields>
+                </orderprocessing_logging>
+            </groups>
+        </knm_orderprocessing>
+        <dev translate="label" module="core">
+            <groups>
+                <debug translate="label">
+                    <fields>
+                        <template_hints translate="label">
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </template_hints>
+                        <template_hints_blocks translate="label">
+                            <label>Add Block Names to Hints</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>21</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </template_hints_blocks>
+                    </fields>
+                </debug>
+            </groups>
+        </dev>
+    </sections>
+</config>

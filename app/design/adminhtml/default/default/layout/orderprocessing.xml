@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <orderprocessing_adminhtml_orderprocessing_index>
+        <reference name="content">
+            <block type="orderprocessing/adminhtml_orderprocessing" name="orderprocessing" />
+        </reference>
+    </orderprocessing_adminhtml_orderprocessing_index>
+    <orderprocessing_adminhtml_message_index>
+        <reference name="content">
+            <block type="orderprocessing/adminhtml_message" name="message" />
+        </reference>
+    </orderprocessing_adminhtml_message_index>
+    <orderprocessing_adminhtml_message_edit>
+        <reference name="content">
+            <block type="orderprocessing/adminhtml_message_edit" name="message"></block>
+        </reference>
+    </orderprocessing_adminhtml_message_edit>
+</layout>
