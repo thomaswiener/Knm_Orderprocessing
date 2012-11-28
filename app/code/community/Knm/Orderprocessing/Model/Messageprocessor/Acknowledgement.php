@@ -57,7 +57,7 @@ class Knm_Orderprocessing_Model_Messageprocessor_Acknowledgement
             //write MerchantOrderItemId to orderItem for later processing
             $orderItem->save();
             //write history log to order, save
-            $order->addStatusHistoryComment(Knm_Orderprocessing_Model_Abstract::NOTICE_LOG_PREFIX . ': KmoMerchantOrderItemId for Item: ' . $orderItem->getId() . ' was successfully added.');
+            $order->addStatusHistoryComment($this->_getPrefixLog('NOTICE_LOG_PREFIX') . ': KmoMerchantOrderItemId for Item: ' . $orderItem->getId() . ' was successfully added.');
             $order->save();
         }
     }

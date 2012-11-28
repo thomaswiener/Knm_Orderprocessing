@@ -40,7 +40,11 @@ class Knm_Orderprocessing_Model_Messageprocessor_Adjustment
         }
         //refund  items not invoiced, optional! mandatory for ratepay
         //ratepay needs to be informed => Refactor please
-        $payment->cancel($order, $notInvoicedItems, $message);
+        if ((array_key_exists('NoInventory', $notInvoicedItems)) 
+            && ($notInvoicedItems['NoInventory'] != array())
+        ) {
+            $payment->cancel($order, $notInvoicedItems, $message);
+        }
         
         $this->_cancelIfNeeded($order, $message);
         

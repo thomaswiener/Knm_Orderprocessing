@@ -5,12 +5,12 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
     const NOTICE_LOG_PREFIX   = '#### ORDERPROCESSING NOTICE';
     const WARNING_LOG_PREFIX  = '#### ORDERPROCESSING WARNING';
     const ERROR_LOG_PREFIX    = '#### ORDERPROCESSING ERROR';
-    
+
     const DIRECTORY_ORDERPROCESSING = 'orderprocessing';
     const DIRECTORY_NEW             = 'new';
     const DIRECTORY_PROCESSED       = 'processed';
     const DIRECTORY_ERROR           = 'error';
-    
+
     protected function _hasOrderItemCreditmemo(Mage_Sales_Model_Order $order, $orderItem)
     {
         //check if creditmemo for item exists
@@ -23,28 +23,28 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         }
         return true;
     }
-    
+
     protected function _cancelIfNeeded(Mage_Sales_Model_Order $order, Knm_Orderprocessing_Model_Message $message)
     {
         // Als zu stornierend markierte Artikel (Status "nicht ausführbar") vorhanden?
         $cancelItemsExistant = $this->_hasExsistantCancelItems($order);
         if($cancelItemsExistant === false)
             return;
-    
+
         $openItemsExistant = $this->_hasExsistantOpenItems($order);
-    
+
         //TODO wo kommt dieses orderitem her
         if(!$orderItem->getQtyKmoApproved() || $openItemsExistant === false) {
             // check if order has been canceled already
             if($order->isCanceled()) {
                 // Throw Error F080
-                throw new Exception($oMessage->asXML(), 1080);
+                throw new Exception($message->asXML(), 1080);
             }
-    
+
             $this->_cancelOrder($order);
         }
     }
-    
+
     protected function _cancelOrder(Mage_Sales_Model_Order $order)
     {
         try {
@@ -53,14 +53,14 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
                 ->cancel()
                 ->save()
             ;
-    
+
             //set history log
             $order->addStatusHistoryComment('Komplette Stornierung der Bestellung durch Partner.', $order->getStatus())->setIsCustomerNotified(true);
             $emailComment = 'Ihre komplette Bestellung wurde aufgrund von Lieferschwierigkeiten bei unserem Partner storniert.';
-    
+
             // inform customer about part and full cancellation
             $order->sendOrderUpdateEmail(true, $emailComment);
-    
+
         } catch (Exception $e) {
             // Stornierung konnte nicht durchgeführt werden
             // Freigabe der vorauthorisierten Finanzmittel erfolgreich?
@@ -69,9 +69,9 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
             throw new Exception($e->getMessage().' '.$oMessage->asXML(), 1090);
         }
     }
-    
-    
-    
+
+
+
     //TODO need to be refactored!!!
     protected function _sendInvoiceEmail(Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice)
     {
@@ -79,7 +79,7 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         $template = Mage::getModel('sales/email_template')->load($templateId);
         $body = str_replace('{{htmlescape var=$order.getCustomerName()}}',$order->getCustomerFirstname(). ' ' . $order->getCustomerLastname(),$template->getTemplateText());
         $body = str_replace('{{var order.increment_id}}',$order->getIncrementId(),$body);
-    
+
         //create pdf invoice
         $pdf = Mage::getModel('sales/order_pdf_invoice')->getPdf( array($invoice) );
         //create mail
@@ -100,7 +100,7 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         //send
         $mail->send();
     }
-    
+
     /**
      * Loop through invoice collection of order and find orderItem by id.
      *
@@ -122,9 +122,9 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         }
         return false;
     }
-    
+
     /**
-     * 
+     *
      * @param Mage_Sales_Model_Order $order
      * @param unknown_type $orderItemId
      */
@@ -139,9 +139,9 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         }
         return false;
     }
-    
+
     /**
-     * 
+     *
      * @param unknown_type $orderId
      * @return Ambigous <Mage_Core_Model_Abstract, Mage_Core_Model_Abstract>
      */
@@ -150,10 +150,10 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         $order = Mage::getModel('sales/order')->loadByIncrementId($orderId);
         return $order;
     }
-    
+
     /**
      * Finds creditmemo for given order and orderItem if exsists.
-     * 
+     *
      * @param Mage_Sales_Model_Order $order
      * @param Mage_Sales_Model_Order_Item $orderItem
      * @return credtimemo if exsists otherwise false
@@ -172,7 +172,7 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         }
         return false;
     }
-    
+
     protected function _getInvoice($order, $orderItem)
     {
         foreach ($order->getInvoiceCollection() as $invoice)
@@ -186,7 +186,7 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         }
         return false;
     }
-    
+
     protected function _getItemsByMessage(Knm_Orderprocessing_Model_Message $message)
     {
         $items = Mage::getModel('orderprocessing/item')
@@ -196,7 +196,7 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         #if ($message->getMessageType() == 'OrderFulfillment') die((string)$items->getSelect());
         return $items;
     }
-    
+
     /**
      * * Loads item by XMLs Shop Order Item Id which is type of item id in Mage_Sales_Model_Order_Item
      * @param Knm_Orderprocessing_Model_Item $item Item with given Item Id
@@ -208,14 +208,14 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
             ->getCollection()
             ->addFieldToFilter('item_id', $item->getShopOrderItemCode())
         ;
-        
+
         if (sizeof($orderItems) == 0)
             return false;
-        
+
         $orderItem = $orderItems->getFirstItem();
         return $orderItem;
     }
-    
+
     /**
      * Lao
      * @param unknown_type $item
@@ -231,7 +231,7 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         $orderItem = $orderItems->getFirstItem();
         return $orderItem;
     }
-    
+
     protected function _hasExsistantCancelItems(Mage_Sales_Model_Order $order)
     {
         foreach($order->getAllItems() as $orderItem) {
@@ -243,19 +243,19 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         }
         return false;
     }
-    
+
     protected function _hasExsistantOpenItems(Mage_Sales_Model_Order $order)
     {
         foreach($order->getAllItems() as $orderItem) {
             if($orderItem->isDummy() === true) {
                 continue;
             }
-            if(($orderItem->geQtyKmoShipped() + $oOrderItem->getQtyKmoCouldnotship() + $orderItem->getQtyKmoCanceled()) != $oOrderItem->getQtyKmoApproved())
+            if(($orderItem->geQtyKmoShipped() + $orderItem->getQtyKmoCouldnotship() + $orderItem->getQtyKmoCanceled()) != $orderItem->getQtyKmoApproved())
                 return true;
         }
         return false;
     }
-    
+
     protected function _checkIfAllItemsExist($items)
     {
         foreach ($items as $item)
@@ -270,32 +270,34 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
         }
         return true;
     }
-    
+
     protected function _cancelOrderWhenAllItemsHaveBeenCanceled()
     {
-    
+
     }
-    
+
     protected function _getDirectoryNew()
     {
+        return '/srv/www/faszinata/htdocs-reloaded/shared/messages/new/';
         return $this->_getDirectory(Knm_Orderprocessing_Model_Abstract::DIRECTORY_NEW);
     }
-    
+
     protected function _getDirectoryProcessed()
     {
+        return '/srv/www/faszinata/htdocs-reloaded/shared/messages/processed/';
         return $this->_getDirectory(Knm_Orderprocessing_Model_Abstract::DIRECTORY_PROCESSED);
     }
-    
+
     protected function _getDirectoryError()
     {
         return $this->_getDirectory(Knm_Orderprocessing_Model_Abstract::DIRECTORY_ERROR);
     }
-    
+
     private function _getDirectory($directory)
     {
         $baseDirectory = Mage::getBaseDir('base') . '/' . Knm_Orderprocessing_Model_Abstract::DIRECTORY_ORDERPROCESSING;
         $directory     = $baseDirectory . '/' . $directory;
-        
+
         if (!file_exists($baseDirectory) )
         {
             mkdir($baseDirectory);
@@ -306,10 +308,20 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
             mkdir($directory);
             chmod($directory, 0777);
         }
-        
+
         return $directory . '/';
     }
-    
+
+    protected function _getPrefixLog($level = 'NOTICE_LOG_PREFIX')
+    {
+        $prefix = Mage::getStoreConfig('knm_orderprocessing/orderprocessing_logging/' . strtolower($level));
+
+        if ($prefix != '')
+            return $prefix;
+
+        return constant("Knm_Orderprocessing_Model_Abstract::$level"); #Knm_Orderprocessing_Model_Abstract::$level;
+    }
+
     protected function _implodeArray($array, $glue = '<br />')
     {
     	$ignore = array('USER','PWD','SIGNATURE');
@@ -317,9 +329,10 @@ abstract class Knm_Orderprocessing_Model_Abstract extends Mage_Core_Model_Abstra
     	foreach ($array as $key => $value)
     	{
     		if (in_array($key, $ignore)) $value = 'xxxxxxxxxxxxxxxxxxxx';
-    
+
     		$text .= $glue . $key . ' => ' . $value;
     	}
     	return $text;
     }
+
 }

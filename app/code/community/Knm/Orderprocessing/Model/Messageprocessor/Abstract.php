@@ -4,12 +4,15 @@ class Knm_Orderprocessing_Model_Messageprocessor_Abstract
     extends Knm_Orderprocessing_Model_Abstract 
 {
     //payment methods
-    const RATEPAY_INVOICE = 'ratepay_rechnung';
-    const COMPUTOP_CC     = 'computop_cc';
-    const COMPUTOP_EFT    = 'computop_eft';
-    const PAYPAL_STANDARD = 'paypal_standard';
-    const CHECKMO         = 'checkmo';
-    const FREE            = 'free';
+    const RATEPAY_INVOICE       = 'ratepay_rechnung';
+    const COMPUTOP_CC           = 'computop_cc';
+    const COMPUTOP_EFT          = 'computop_eft';
+    const PAYPAL_STANDARD       = 'paypal_standard';
+    const CHECKMO               = 'checkmo';
+    const FREE                  = 'free';
+    const PNSOFORTUEBERWEISUNG  = 'pnsofortueberweisung';
+    const RS_VORKASSE           = 'rs_vorkasse';
+    const RS_LASTSCHRIFT        = 'rs_lastschrift';
     
     /**
      * current payment methods
@@ -18,12 +21,15 @@ class Knm_Orderprocessing_Model_Messageprocessor_Abstract
      * @var unknown_type
      */
     protected $paymentMethods = array(
-        Knm_Orderprocessing_Model_Messageprocessor_Abstract::RATEPAY_INVOICE  => 'orderprocessing/payment_ratepay',
-        Knm_Orderprocessing_Model_Messageprocessor_Abstract::COMPUTOP_CC      => 'orderprocessing/payment_cc',
-        Knm_Orderprocessing_Model_Messageprocessor_Abstract::COMPUTOP_EFT     => 'orderprocessing/payment_eft',
-        Knm_Orderprocessing_Model_Messageprocessor_Abstract::PAYPAL_STANDARD  => 'orderprocessing/payment_paypal',
-        Knm_Orderprocessing_Model_Messageprocessor_Abstract::CHECKMO          => 'orderprocessing/payment_checkmo',
-        Knm_Orderprocessing_Model_Messageprocessor_Abstract::FREE             => 'orderprocessing/payment_free',
+        Knm_Orderprocessing_Model_Messageprocessor_Abstract::RATEPAY_INVOICE        => 'orderprocessing/payment_ratepay',
+        Knm_Orderprocessing_Model_Messageprocessor_Abstract::COMPUTOP_CC            => 'orderprocessing/payment_cc',
+        Knm_Orderprocessing_Model_Messageprocessor_Abstract::COMPUTOP_EFT           => 'orderprocessing/payment_eft',
+        Knm_Orderprocessing_Model_Messageprocessor_Abstract::PAYPAL_STANDARD        => 'orderprocessing/payment_paypal',
+        Knm_Orderprocessing_Model_Messageprocessor_Abstract::CHECKMO                => 'orderprocessing/payment_checkmo',
+        Knm_Orderprocessing_Model_Messageprocessor_Abstract::FREE                   => 'orderprocessing/payment_free',
+        Knm_Orderprocessing_Model_Messageprocessor_Abstract::PNSOFORTUEBERWEISUNG   => 'orderprocessing/payment_pnsofortueberweisung',
+        Knm_Orderprocessing_Model_Messageprocessor_Abstract::RS_VORKASSE            => 'orderprocessing/payment_rsvorkasse',
+        Knm_Orderprocessing_Model_Messageprocessor_Abstract::RS_LASTSCHRIFT         => 'orderprocessing/payment_rslastschrift',
     );
     
     /**
@@ -38,7 +44,7 @@ class Knm_Orderprocessing_Model_Messageprocessor_Abstract
     );
     
     /**
-     * Load payment model by order payment methdo
+     * Load payment model by order payment method
      * @param Mage_Sales_Model_Order $order
      * @throws Exception
      */
@@ -99,7 +105,7 @@ class Knm_Orderprocessing_Model_Messageprocessor_Abstract
         //inform customer by email
         $shipment->sendEmail();
     
-        $order->addStatusHistoryComment(Knm_Orderprocessing_Model_Abstract::NOTICE_LOG_PREFIX . ': Shipment ' . $shipment->getIncrementId() . ' was created successfully. Customer was informed by email.');
+        $order->addStatusHistoryComment($this->_getPrefixLog('NOTICE_LOG_PREFIX') . ': Shipment ' . $shipment->getIncrementId() . ' was created successfully. Customer was informed by email.');
         $order->save();
     }
     
@@ -113,5 +119,36 @@ class Knm_Orderprocessing_Model_Messageprocessor_Abstract
         if ($totalQty > 0) return true;
         
         return false;
+    }
+    
+    protected function _writeXmlsToDb() {
+    
+        //open directory new
+        $oDirHandle = opendir($this->_getDirectoryNew());
+    
+        //is directory accessible
+        if($oDirHandle !== false) {
+            //read directory content
+            while(($sFilename = readdir($oDirHandle)) !== false) {
+                //is current directory index a file
+                if(is_file($this->_getDirectoryNew() . $sFilename) === true) {
+                    //does filename match given pattern
+                    if(true || preg_match($this->_sFileRegex, $sFilename) == 1) {
+    
+                        //
+                        $oXml = simplexml_load_file($this->_getDirectoryNew() . $sFilename);
+                        $model = Mage::getModel('orderprocessing/observer');
+                        $model->processXml($oXml, $sFilename);
+    
+                        unlink($this->_getDirectoryNew() . $sFilename);
+                    } else {
+                        //handle pattern mismatch
+                        $this->_handleFileError($this->_getDirectoryNew(), $sFilename);
+                    }
+                }
+            }
+            //close directory
+            closedir($oDirHandle);
+        }
     }
 }
