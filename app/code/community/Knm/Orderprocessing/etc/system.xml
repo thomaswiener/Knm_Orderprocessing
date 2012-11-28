@@ -28,10 +28,30 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                       </active>
+                      <increment_first translate="label">
+                          <label>First increment id to process</label>
+                          <comment>Starts with given increment id and ignores all others. If empty all increment ids will be processed.</comment>
+                          <tooltip></tooltip>
+                          <sort_order>12</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </increment_first>
+                      <increment_last translate="label">
+                          <label>Last increment id to process</label>
+                          <comment>Ends with given increment id and ignores all others. If empty all increment ids will be processed.</comment>
+                          <tooltip></tooltip>
+                          <sort_order>15</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <frontend_type>text</frontend_type>
+                      </increment_last>
                       <fileregex translate="label">
-                            <label>Filename regular expression</label>
+                            <label>Filename validation (regex)</label>
                             <frontend_type>textarea</frontend_type>
-                            <comment>Filename are being validated against given regular expression. If empty, all file will pass. Example: "#^Euro_(Best|Stor|Vers|Aend)_1719901-D_([0-9]{8}|[0-9]{18}).xml$#"</comment>
+                            <comment>Filename are being validated against given regular expression. If empty, all files will pass validation. Example: "#^Euro_(Best|Stor|Vers|Aend)_1719901-D_([0-9]{8}|[0-9]{18}).xml$#"</comment>
                             <sort_order>60</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -146,6 +166,7 @@
                   <show_in_website>1</show_in_website>
                   <show_in_store>1</show_in_store>
                   <fields>
+                      <!-- 
                       <active translate="label">
                             <label>Enabled</label>
                             <frontend_type>select</frontend_type>
@@ -155,6 +176,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                       </active>
+                      -->
                       <notice_log_prefix translate="label">
                           <label>Notice Log Prefix</label>
                           <comment></comment>
@@ -194,7 +216,7 @@
                           <show_in_default>1</show_in_default>
                           <show_in_website>1</show_in_website>
                           <show_in_store>1</show_in_store>
-                          <frontend_type>text</frontend_type>
+                          <frontend_type>textarea</frontend_type>
                       </error_email_address>
                     </fields>
                 </orderprocessing_logging>

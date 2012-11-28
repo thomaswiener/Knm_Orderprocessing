@@ -6,7 +6,7 @@ $installer->run("
     
     CREATE TABLE {$this->getTable('knm_message')} (
         `id` INT NOT NULL auto_increment,
-        `message_type` SET('OrderAcknowledgement','OrderFulfillment','OrderAdjustment') NULL ,
+        `message_type` SET('OrderAcknowledgement','OrderFulfillment','OrderAdjustment','OrderCancellation') NULL ,
         `merchant_identifier` VARCHAR(40) NULL ,
         `shop_order_id` VARCHAR(20) NULL ,
         `status_code` VARCHAR(45) NULL ,
@@ -56,6 +56,7 @@ $installer->run("
         INSERT INTO {$this->getTable('sales_order_status')} (`status`, `label`) VALUES ('open', 'Open');
         INSERT INTO {$this->getTable('sales_order_status')} (`status`, `label`) VALUES ('different_article_states', 'Different article states');
         INSERT INTO {$this->getTable('sales_order_status')} (`status`, `label`) VALUES ('shipped', 'Shipped');
+        INSERT INTO {$this->getTable('sales_order_status')} (`status`, `label`) VALUES ('exported', 'Exported');
 ");
 
 $installer->endSetup();

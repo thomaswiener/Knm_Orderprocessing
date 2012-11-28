@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- 
+<!--
 /**
  * @category   Knm
  * @package    Knm_Orderprocessing
@@ -10,7 +10,7 @@
 <config>
     <modules>
         <Knm_Orderprocessing>
-            <version>0.1.0</version>
+            <version>0.1.1</version>
         </Knm_Orderprocessing>
     </modules>
     <frontend>
@@ -33,39 +33,39 @@
     </frontend>
     <admin>
         <routers>
-			<orderprocessing>
-				<use>admin</use>
-				<args>
-					<module>Knm_Orderprocessing</module>
-					<frontName>orderprocessing</frontName>
-				</args>
-			</orderprocessing>
+            <orderprocessing>
+                <use>admin</use>
+                <args>
+                    <module>Knm_Orderprocessing</module>
+                    <frontName>orderprocessing</frontName>
+                </args>
+            </orderprocessing>
         </routers>
     </admin>
     <adminhtml>
-		<acl>
-			<resources>
-				<all>
-					<title>Allow Everything</title>
-				</all>
-				<admin>
-					<children>
-						<Knm_Orderprocessing>
-							<title>Orderprocessing Module</title>
-							<sort_order>10</sort_order>
-						</Knm_Orderprocessing>
-					</children>
-				</admin>
-			</resources>
-		</acl>
-		<layout>
-			<updates>
-				<orderprocessing>
-					<file>orderprocessing.xml</file>
-				</orderprocessing>
-			</updates>
-		</layout>
-    </adminhtml>   
+        <acl>
+            <resources>
+                <all>
+                    <title>Allow Everything</title>
+                </all>
+                <admin>
+                    <children>
+                        <Knm_Orderprocessing>
+                            <title>Orderprocessing Module</title>
+                            <sort_order>10</sort_order>
+                        </Knm_Orderprocessing>
+                    </children>
+                </admin>
+            </resources>
+        </acl>
+        <layout>
+            <updates>
+                <orderprocessing>
+                    <file>orderprocessing.xml</file>
+                </orderprocessing>
+            </updates>
+        </layout>
+    </adminhtml>
     <global>
         <models>
             <orderprocessing>
@@ -121,6 +121,21 @@
             </orderprocessing>
         </helpers>
     </global>
+
+    <default>
+        <knm_orderprocessing>
+            <orderprocessing_local_file_storage>
+                <files_new>new</files_new>
+                <files_processed>processed</files_processed>
+            </orderprocessing_local_file_storage>
+            <orderprocessing_logging>
+                <notice_log_prefix>#### ORDERPROCESSING NOTICE</notice_log_prefix>
+                <warning_log_prefix>#### ORDERPROCESSING WARNING</warning_log_prefix>
+                <error_log_prefix>#### ORDERPROCESSING ERROR</error_log_prefix>
+            </orderprocessing_logging>
+        </knm_orderprocessing>
+    </default>
+
     <adminhtml>
         <acl>
             <resources>
@@ -142,4 +157,29 @@
             </resources>
         </acl>
     </adminhtml>
+
+    <!--
+        1.  export f_partner_id to order,
+            attribute created in sql setup: mysql4-upgrade-0.1.0-0.1.1.php
+    -->
+    <global>
+        <events>
+            <checkout_cart_product_add_after>
+                <observers>
+                    <module>
+                        <type>singleton</type>
+                        <class>Knm_Orderprocessing_Model_Observer</class>
+                        <method>addProductAttributesToItem</method>
+                    </module>
+                </observers>
+            </checkout_cart_product_add_after>
+        </events>
+        <fieldsets>
+            <sales_convert_quote_item>
+                <f_partner_id>
+                    <to_order_item>*</to_order_item>
+                </f_partner_id>
+            </sales_convert_quote_item>
+        </fieldsets>
+    </global>
 </config>
