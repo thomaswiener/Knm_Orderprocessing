@@ -1,7 +1,7 @@
 <?php
 
-class Knm_Orderprocessing_Model_Payment_Cc 
-    extends Knm_Orderprocessing_Model_Payment_Abstract 
+class Knm_Orderprocessing_Model_Payment_Cc
+    extends Knm_Orderprocessing_Model_Payment_Abstract
         implements Knm_Orderprocessing_Model_Payment_Interface
 {
 	/**
@@ -9,7 +9,7 @@ class Knm_Orderprocessing_Model_Payment_Cc
 	 * @var string
 	 */
     protected $paymentName = 'computop_cc';
-    
+
     /**
      * (non-PHPdoc)
      * @see Knm_Orderprocessing_Model_Payment_Interface::deliver()
@@ -18,67 +18,53 @@ class Knm_Orderprocessing_Model_Payment_Cc
     {
         $this->_createInvoice($order, $items);
     }
-    
+
     /**
      * (non-PHPdoc)
      * @see Knm_Orderprocessing_Model_Payment_Interface::refund()
      */
     public function refund(Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $items = array(), Knm_Orderprocessing_Model_Message $message)
     {
+        //create creditmemo
         $creditmemo = $this->_refund($order, $invoice, $items, $message, $offline = false, $isPrepareInvoiceCreditmemo = true);
-        
-        if ($creditmemo->canRefund())
-        {
-            $creditmemo->refund();
-        }
-        
+        //update history
         $this->_updateQuantitiesAndAddHistory($order, $message);
     }
-    
+
     /**
      * (non-PHPdoc)
      * @see Knm_Orderprocessing_Model_Payment_Interface::cancel()
      */
     public function cancel(Mage_Sales_Model_Order $order, $items = array(), Knm_Orderprocessing_Model_Message $message)
     {
-        
+        //cancel uninvoiced items
+        $isCanceled = $this->cancelItems($order, $items, $message);
+        //if invoice has been created, do refund
+        if ($isCanceled === false)
+        {
+            $invoices   = $order->getInvoiceCollection();
+            $invoice    = $invoices->getFirstItem();
+            $creditmemo = $this->refund($order, $invoice, $items['NoInventory'], $message);
+        }
     }
-    
-    
-    
-//     /**
-//      * (non-PHPdoc)
-//      * @see Knm_Orderprocessing_Model_Payment_Interface::refund()
-//      */
-//     public function refund(Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $items = array(), Knm_Orderprocessing_Model_Message $message)
-//     {
-//         $service = Mage::getModel('sales/service_order', $order);
-//         $data = $this->_getRefundArray($order, $items);
-    
-//         $creditmemo = $service->prepareInvoiceCreditmemo($invoice, $data);
-//         $creditmemo->setRefundRequested(true);
-//         $creditmemo->setOfflineRequested(false);
-//         $creditmemo->register();
-//         $creditmemo->setEmailSent(true);
-//         $creditmemo->getOrder()->setCustomerNoteNotify(false);
-    
-//         $transactionSave = Mage::getModel('core/resource_transaction')
-//         ->addObject($creditmemo)
-//         ->addObject($creditmemo->getOrder())
-//         ;
-    
-//         if ($creditmemo->getInvoice()) {
-//             $transactionSave->addObject($creditmemo->getInvoice());
-//         }
-    
-//         $transactionSave->save();
-    
-//         if ($creditmemo->canRefund())
-//         {
-//             $creditmemo->refund();
-//         }
-    
-//         $this->_updateQuantitiesAndAddHistory($order, $message);
-//     }
+
+    /**
+     * (non-PHPdoc)
+     * @see Knm_Orderprocessing_Model_Payment_Interface::convertItems()
+     */
+    public function convertItems($items)
+    {
+        return array();
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see Knm_Orderprocessing_Model_Payment_Interface::allowMultipleInvoices()
+     */
+    public function allowMultipleInvoices()
+    {
+        return false;
+    }
+
 
 }

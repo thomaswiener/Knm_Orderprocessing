@@ -1,12 +1,12 @@
 <?php
 
-class Knm_Orderprocessing_Model_Payment_Ratepay 
-    extends Knm_Orderprocessing_Model_Payment_Abstract 
+class Knm_Orderprocessing_Model_Payment_Ratepay
+    extends Knm_Orderprocessing_Model_Payment_Abstract
         implements Knm_Orderprocessing_Model_Payment_Interface
 {
-    
+
     protected $paymentName = 'ratepay_rechnung';
-    
+
     /**
      * (non-PHPdoc)
      * @see Knm_Orderprocessing_Model_Payment_Interface::deliver()
@@ -17,7 +17,7 @@ class Knm_Orderprocessing_Model_Payment_Ratepay
         $requester->setOrderId($order->getId());
         $requester->delivery($items);
     }
-    
+
     /**
      * (non-PHPdoc)
      * @see Knm_Orderprocessing_Model_Payment_Interface::refund()
@@ -29,27 +29,45 @@ class Knm_Orderprocessing_Model_Payment_Ratepay
         $requester->customerReturn($items);
         $this->_updateQuantitiesAndAddHistory($order, $message);
     }
-    
-    public function cancel(Mage_Sales_Model_Order $order, $items = array(), Knm_Orderprocessing_Model_Message $message)
+
+    public function cancel(Mage_Sales_Model_Order $order, $notInvoicedItems = array(), Knm_Orderprocessing_Model_Message $message)
     {
-        foreach($notInvoicedItems as $reason => $items) 
+        foreach($notInvoicedItems as $reason => $items)
         {
             if($reason != 'CouldNotShip' && $reason != 'NoInventory') continue;
-            
+
             $requester = Mage::getModel('ratepayrequester/requester');
             $requester->setOrderId($order->getId());
-            $requester->cancel($items);
+            $requester->cancel(array('NoInventory' => $items));
         }
     }
-    
+
     protected function _setOrderItemQty(Mage_Sales_Model_Order_Item $orderItem, $fieldToChange, $qty)
     {
         $orderItem->addData(array(
             $fieldToChange => ($qty + $orderItem->getData($fieldToChange)),
             #'qty_refunded'  => ($qty + $orderItem->getData('qty_refunded')) //ratepay handles qty_refund by its own
         ));
-        
+
         $orderItem->save();
     }
-    
+
+    /**
+     * (non-PHPdoc)
+     * @see Knm_Orderprocessing_Model_Payment_Interface::convertItems()
+     */
+    public function convertItems($items)
+    {
+        return $items;
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see Knm_Orderprocessing_Model_Payment_Interface::allowMultipleInvoices()
+     */
+    public function allowMultipleInvoices()
+    {
+        return true;
+    }
+
 }

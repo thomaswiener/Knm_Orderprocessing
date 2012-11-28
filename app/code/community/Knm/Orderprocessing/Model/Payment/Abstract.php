@@ -34,7 +34,7 @@ class Knm_Orderprocessing_Model_Payment_Abstract
         }
         
         //add status history to order
-        $order->addStatusHistoryComment(Knm_Orderprocessing_Model_Abstract::NOTICE_LOG_PREFIX . ': Invoice: ' . $invoice->getIncrementId() . ' was successfully created.');
+        $order->addStatusHistoryComment($this->_getPrefixLog('NOTICE_LOG_PREFIX') . ': Invoice: ' . $invoice->getIncrementId() . ' was successfully created.');
         $order->save();
         
         return $invoice;
@@ -53,7 +53,7 @@ class Knm_Orderprocessing_Model_Payment_Abstract
     protected function _refund(Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $items = array(), Knm_Orderprocessing_Model_Message $message, $offline = true, $isPrepareInvoiceCreditmemo = false)
     {
         $service = Mage::getModel('sales/service_order', $order);
-        $data = $this->_getRefundArray($order, $items);
+        $data = $this->_getRefundArray($order, $invoice, $items);
         
         if (!$isPrepareInvoiceCreditmemo)
             $creditmemo = $service->prepareCreditmemo($data);
@@ -76,7 +76,34 @@ class Knm_Orderprocessing_Model_Payment_Abstract
         }
         $transactionSave->save();
         
+        $creditmemo->sendEmail();
+        
         return $creditmemo;
+    }
+    
+    /**
+     * 
+     * @param Mage_Sales_Model_Order $order
+     * @param unknown_type $items
+     * @param Knm_Orderprocessing_Model_Message $message
+     */
+    protected function cancelItems(Mage_Sales_Model_Order $order, $items = array(), Knm_Orderprocessing_Model_Message $message)
+    {
+        $invoices = $order->getInvoiceCollection();
+        if (sizeof($invoices) == 0)
+        {
+            print_r($items);
+            foreach($items['NoInventory'] as $itemId => $qty)
+            {
+                $item = Mage::getModel('sales/order_item')->load($itemId);
+                $item
+                ->setQtyCanceled($item->getQtyCanceled() + $qty)
+                ->save()
+                ;
+            }
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -140,45 +167,45 @@ class Knm_Orderprocessing_Model_Payment_Abstract
      * @param unknown_type $items
      * @return unknown
      */
-    protected function _prepareCreditmemo(Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $items)
-    {
-        $service = Mage::getModel('sales/service_order', $order);
+//     protected function _prepareCreditmemo(Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $items)
+//     {
+//         $service = Mage::getModel('sales/service_order', $order);
         
-        $shippingAmount = $this->_getShippingAmount($order, $items);
-        $data = $this->_getCreditmemoData($items, $shippingAmount);
-        //$this->_getCreditmemoData($data, $shippingAmount)
-        // Getting creditmemo
-        $creditmemo = $service->prepareCreditmemo($data);
-        //$service->prepareInvoiceCreditmemo($invoice, $this->_getCreditmemoData($items));
+//         $shippingAmount = $this->_getShippingAmount($order, $items);
+//         $data = $this->_getCreditmemoData($items, $shippingAmount);
+//         //$this->_getCreditmemoData($data, $shippingAmount)
+//         // Getting creditmemo
+//         $creditmemo = $service->prepareCreditmemo($data);
+//         //$service->prepareInvoiceCreditmemo($invoice, $this->_getCreditmemoData($items));
     
-        /*$diff = $creditmemo->getGrandTotal() - $creditmemo->getSubtotalInclTax();
-        if($diff != 0) {
-            unset($creditmemo);
-            $data = $this->_getCreditmemoData($aItems);
-            if($diff > 0) {
-                $data['adjustment_negative'] = $diff;
-            } elseif($diff < 0) {
-                $data['adjustment_positive'] = (-1 * $diff);
-            }
-            $creditmemo = $service->prepareInvoiceCreditmemo($invoice, $data);
-        }*/
-        // Set do transaction
-        $creditmemo->setDoTransaction(true);
-        $creditmemo->setRefundRequested(true);
+//         /*$diff = $creditmemo->getGrandTotal() - $creditmemo->getSubtotalInclTax();
+//         if($diff != 0) {
+//             unset($creditmemo);
+//             $data = $this->_getCreditmemoData($aItems);
+//             if($diff > 0) {
+//                 $data['adjustment_negative'] = $diff;
+//             } elseif($diff < 0) {
+//                 $data['adjustment_positive'] = (-1 * $diff);
+//             }
+//             $creditmemo = $service->prepareInvoiceCreditmemo($invoice, $data);
+//         }*/
+//         // Set do transaction
+//         $creditmemo->setDoTransaction(true);
+//         $creditmemo->setRefundRequested(true);
         
-        $creditmemo->setBaseGrandTotal(round($creditmemo->getBaseGrandTotal(),2));
-        $creditmemo->setGrandTotal(round($creditmemo->getGrandTotal(),2));
+//         $creditmemo->setBaseGrandTotal(round($creditmemo->getBaseGrandTotal(),2));
+//         $creditmemo->setGrandTotal(round($creditmemo->getGrandTotal(),2));
     
-        return $creditmemo;
-    }
+//         return $creditmemo;
+//     }
     
-    protected function _getRefundArray(Mage_Sales_Model_Order $order, $items)
+    protected function _getRefundArray(Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $items)
     {
         $data = array(
             'items'               => $this->_reformatArray($items),
             'do_offline'          => 1,
             'comment_text'        => '',
-            'shipping_amount'     => $this->_getShippingAmount($order, $items),
+            'shipping_amount'     => $this->_getShippingAmount($order, $invoice, $items),
             'adjustment_positive' => 0,
             'adjustment_negative' => 0,
             'qtys'                => $items
@@ -197,7 +224,7 @@ class Knm_Orderprocessing_Model_Payment_Abstract
         return $result;
     }
     
-    protected function _getShippingAmount(Mage_Sales_Model_Order $order, $items)
+    protected function _getShippingAmount(Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $items)
     {
         //reload order
         $orderItems = $order->getAllVisibleItems();
@@ -235,26 +262,26 @@ class Knm_Orderprocessing_Model_Payment_Abstract
         return 0;
     }
     
-    protected function _finalizeCreditmemo(Mage_Sales_Model_Order_Creditmemo $creditmemo)
-    {
-        $creditmemo->setEmailSent(true);
-        $creditmemo->getOrder()->setCustomerNoteNotify(true);
+//     protected function _finalizeCreditmemo(Mage_Sales_Model_Order_Creditmemo $creditmemo)
+//     {
+//         $creditmemo->setEmailSent(true);
+//         $creditmemo->getOrder()->setCustomerNoteNotify(true);
     
-        $transactionSave = Mage::getModel('core/resource_transaction')
-            ->addObject($creditmemo)
-            ->addObject($creditmemo->getOrder())
-        ;
+//         $transactionSave = Mage::getModel('core/resource_transaction')
+//             ->addObject($creditmemo)
+//             ->addObject($creditmemo->getOrder())
+//         ;
     
-        if ($creditmemo->getInvoice())
-            $transactionSave->addObject($creditmemo->getInvoice());
+//         if ($creditmemo->getInvoice())
+//             $transactionSave->addObject($creditmemo->getInvoice());
     
-        $transactionSave->save();
-        $creditmemo->sendEmail(true, '');
+//         $transactionSave->save();
+//         $creditmemo->sendEmail(true, '');
         
-        //add status history to order
-        $creditmemo->getOrder()->addStatusHistoryComment(Knm_Orderprocessing_Model_Abstract::NOTICE_LOG_PREFIX . ': Creditmemo: ' . $creditmemo->getIncrementId() . ' was successfully created.');
-        $creditmemo->getOrder()->save();
-    }
+//         //add status history to order
+//         $creditmemo->getOrder()->addStatusHistoryComment($this->_getPrefixLog('NOTICE_LOG_PREFIX') . ': Creditmemo: ' . $creditmemo->getIncrementId() . ' was successfully created.');
+//         $creditmemo->getOrder()->save();
+//     }
     
     /**
      * 
@@ -332,48 +359,6 @@ class Knm_Orderprocessing_Model_Payment_Abstract
             $order->sendOrderUpdateEmail(true, $emailComment);
         }
     }
-    
-    //OLD _updateQuantitiesAndAddHistory
-    /*protected function _updateQuantitiesAndAddHistory(Mage_Sales_Model_Order $order, Knm_Orderprocessing_Model_Message $message)
-    {
-        $emailComment = null;
-        
-        $items = $this->_getItemsByMessage($message);
-        
-        foreach ($items as $item)
-        {
-            //get orderItem from item
-            $orderItem = $this->_getOrderItemByMerchantOrderItemId($item);
-            //calculate amount
-            $qty = (double)$item->getItemPriceAdjustments() / (double) $orderItem->getBasePriceInclTax();
-    
-            $fieldToChange = '';
-            if($item->getAdjustmentReason() == 'CustomerReturn')
-            {
-                // Artikel als "Retourniert" markieren
-                $fieldToChange = 'qty_kmo_backordered';
-            }
-            elseif($item->AdjustmentReason == 'CouldNotShip' || $item->AdjustmentReason == 'NoInventory')
-            {
-                // Artikel als "Nicht ausführbar" markieren
-                $fieldToChange = 'qty_kmo_couldnotship';
-    
-                $emailComment.= ($orderItem->getData('qty_kmo_canceled') + $orderItem->getData('qty_kmo_couldnotship') + $qty).
-                "x ".$orderItem->getData('name')." (". $orderItem->getData('sku') .")<br />";
-            }
-    
-            $this->_setOrderItemQty($orderItem, $fieldToChange, $qty);
-        }
-    
-        //reload order object, might have changed by now already (ratepay problem with grand total)
-        $order = $this->_getOrderByIncrementId($message->getShopOrderId());
-    
-        // send order update email for canceled items
-        if(!is_null($emailComment)) {
-            $order->addStatusHistoryComment('Teilstornierung der Bestellung durch Partner.<br />'. $emailComment, $order->getStatus())->setIsCustomerNotified(true);
-            $order->sendOrderUpdateEmail(true, $emailComment);
-        }
-    }*/
     
     /**
      * 
